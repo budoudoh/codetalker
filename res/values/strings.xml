@@ -1,0 +1,31 @@
+<resources>
+
+    <string name="app_name">Code Talker</string>
+    <string name="code_talker_label">Code Talker</string>
+    <string name="code_talker_settings">Code Talker Settings</string>
+	<string name="ime_name">Sample Soft Keyboard</string>
+
+    <!-- Symbols that are commonly considered word separators in this language -->
+    <string name="word_separators">\u0020.,;:!?\n()[]*&amp;@{}/&lt;&gt;_+=|&quot;</string>
+    
+    <!-- Labels on soft keys -->
+    <string name="label_go_key">Go</string>
+    <string name="label_next_key">Next</string>
+    <string name="label_send_key">Send</string>
+
+    <!-- Labels for subtype -->
+    <string name="label_subtype_generic">%s</string>
+    <string name="label_subtype_en_GB">English (GB)</string>
+
+    <!-- Titles for ImePreference -->
+    <string name="settings_name">Sample Soft Keyboard Settings</string>
+    <string name="language_selection_title">Input languages</string>
+    <string name="select_language">Select input languages</string>
+    <string name="general_category">General</string>
+    <string name="please_wait">Please wait ......</string>
+    <string name="default_decision_error">Could not make a decision based on your request</string>
+	<string name="watson_dialog_title">Watson Speech To Text</string>
+	<string name="watson_oauth_failure">Could not authenticate to Watson, please try again.</string>
+	<string name="preference_retrieve_error">Could not retrieve preference.</string>
+	<string name="say_code">Say your code word now</string>
+</resources>
