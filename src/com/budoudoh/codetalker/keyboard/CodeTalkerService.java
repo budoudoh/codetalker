@@ -52,7 +52,7 @@ public class CodeTalkerService extends InputMethodService implements KeyboardVie
     private LatinKeyboard mSymbolsShiftedKeyboard;
     private LatinKeyboard mQwertyKeyboard;
     private LatinKeyboard mPasswordKeyboard;
-    
+    private LatinKeyboard mPasswordFilledKeyboard;
     private LatinKeyboard mCurKeyboard;
     
     private String mWordSeparators;
@@ -87,6 +87,7 @@ public class CodeTalkerService extends InputMethodService implements KeyboardVie
         mSymbolsKeyboard = new LatinKeyboard(this, R.xml.symbols);
         mSymbolsShiftedKeyboard = new LatinKeyboard(this, R.xml.symbols_shift);
         mPasswordKeyboard = new LatinKeyboard(this, R.xml.password);
+        mPasswordFilledKeyboard = new LatinKeyboard(this, R.xml.password_fill);
     }
     
     /**
@@ -167,7 +168,14 @@ public class CodeTalkerService extends InputMethodService implements KeyboardVie
                         variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
                     // Do not display predictions / what the user is typing
                     // when they are entering a password.
-                	mCurKeyboard = mPasswordKeyboard;
+                	if(code_talker.current_password != null)
+                	{
+                		mCurKeyboard = mPasswordFilledKeyboard;
+                	}	
+                	else
+                	{
+                		mCurKeyboard = mPasswordKeyboard;
+                	}
                     mPredictionOn = false;
                 }
                 
@@ -510,6 +518,12 @@ public class CodeTalkerService extends InputMethodService implements KeyboardVie
             }
         } else if (primaryCode == LatinKeyboardView.KEYCODE_PASSWORD){
         	startWatson();
+        }else if (primaryCode == LatinKeyboardView.KEYCODE_PASSWORD_FILLED){
+        	if(code_talker.current_password != null)
+        	{
+        		onText(code_talker.current_password);
+        	}
+        	code_talker.current_password = null;
         }else {
             handleCharacter(primaryCode, keyCodes);
         }
@@ -683,9 +697,10 @@ public class CodeTalkerService extends InputMethodService implements KeyboardVie
     {
     	
     	code_talker.createHandler(gotMessage);
-    	code_talker.ic = getCurrentInputConnection();
     	Intent request = new Intent(this.getApplicationContext(), VoiceIntegration.class);
     	request.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    	request.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+    	
     	this.getApplicationContext().startActivity(request);
     	
     	
@@ -697,17 +712,11 @@ public class CodeTalkerService extends InputMethodService implements KeyboardVie
 		public boolean handleMessage(Message msg) {
 			String password = msg.getData().getString("password");
 			Log.i(TAG, password);
-			try
-			{
-				Thread.sleep(1000);
-			}
-			catch(Exception ex)
-			{
-				ex.printStackTrace();
-			}
-			InputConnection ic = getCurrentInputConnection();
+			code_talker.current_password = password;
+			//onText(password);
+			/*InputConnection ic = getCurrentInputConnection();
 			ic.deleteSurroundingText(10, 10);
-			ic.commitText(password, 1);
+			ic.commitText(password, 1);*/
 			return false;
 		}
 	};

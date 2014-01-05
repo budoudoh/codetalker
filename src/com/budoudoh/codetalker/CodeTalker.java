@@ -42,7 +42,7 @@ public class CodeTalker extends Application {
 	private Handler messageHandler;
 	private Context context;
 	private SharedPreferences settings;
-	public InputConnection ic;
+	public String current_password = null;
 	
 	@Override
     public void onCreate() {

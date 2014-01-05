@@ -27,6 +27,7 @@ public class LatinKeyboardView extends KeyboardView {
 
     public static final int KEYCODE_OPTIONS = -100;
     public static final int KEYCODE_PASSWORD = -101;
+    public static final int KEYCODE_PASSWORD_FILLED = -102;
 
     public LatinKeyboardView(Context context, AttributeSet attrs) {
         super(context, attrs);

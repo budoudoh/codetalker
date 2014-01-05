@@ -3,8 +3,15 @@ package com.budoudoh.codetalker;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Calendar;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 import org.apache.commons.io.FileUtils;
 
@@ -37,6 +44,9 @@ import com.att.android.speech.ATTSpeechErrorListener;
 import com.att.android.speech.ATTSpeechResult;
 import com.att.android.speech.ATTSpeechResultListener;
 import com.att.android.speech.ATTSpeechService;
+import com.budoudoh.codetalker.crypto.Crypto;
+import com.budoudoh.codetalker.crypto.KeyManager;
+import com.budoudoh.codetalker.models.StoredCredentials;
 import com.budoudoh.codetalker.models.WatsonNBest;
 import com.budoudoh.codetalker.models.WatsonOAuth;
 import com.budoudoh.codetalker.models.WatsonResult;
@@ -379,8 +389,10 @@ public class VoiceIntegration extends Activity
 			progress.dismiss();
 			Log.i(TAG, arg0.toString());
 			finish();
-			/*(Gson gson = new Gson();
-			WatsonResult results = gson.fromJson(arg0.toString(), WatsonResult.class);*/ 
+			Gson gson = new Gson();
+			WatsonResult results = gson.fromJson(arg0.toString(), WatsonResult.class);
+			
+			performResolution(results);
 			
 		}
 	};
@@ -393,15 +405,65 @@ public class VoiceIntegration extends Activity
 			Log.i(TAG, arg0.toString());
 			Message message = new Message();
 	 		Bundle temp = new Bundle();
-	 		temp.putString("password", "N0p33rs!");
+	 		temp.putString("password", "abc123!");
 	 		message.setData(temp);
 	 		code_talker.getHandler().sendMessage(message);
-	 		code_talker.ic.deleteSurroundingText(10, 10);
-	 		code_talker.ic.commitText("N0p33rs!", 1);
 			finish();
 			
 		}
 	};
+	
+	private void performResolution(WatsonResult result)
+	{
+		String best = result.getRecognition().getNBest()[0].getResultText();
+		
+		String credentials = settings.getString(CodeTalkerSettings.CREDENTIALS, null);
+	    if(credentials != null)
+	    {
+	    	Gson gson = new Gson();
+	    	StoredCredentials[] credentials_array = gson.fromJson(credentials, StoredCredentials[].class);
+	    	
+	    	for(int i = 0; i > credentials_array.length; i++)
+	    	{
+	    		StoredCredentials credential = credentials_array[0];
+	    		
+	    		if(credential.getName().equalsIgnoreCase(best))
+	    		{
+	    			Wave wave1 = new Wave(stt_file);
+	    			Wave wave2 = new Wave(credential.getWav_file());
+	    			
+	    			if(wave1.getFingerprintSimilarity(wave2).getSimilarity() > .5)
+	    			{
+	    				 KeyManager manager = new KeyManager(credential.getKey(), credential.getIv());
+	    				 String Decrypted_Data = "password";
+	    			        try {
+	    			            Crypto crypto = new Crypto(context, manager);
+	    			            Decrypted_Data = crypto.armorDecrypt(credential.getPasswordHash());
+	    			        }   catch (InvalidKeyException e) {
+	    			            Log.e("SE3", "Exception in StoreData: " + e.getMessage());
+	    			            } catch (NoSuchAlgorithmException e) {
+	    			            Log.e("SE3", "Exception in StoreData: " + e.getMessage());
+	    			            } catch (NoSuchPaddingException e) {
+	    			            Log.e("SE3", "Exception in StoreData: " + e.getMessage());
+	    			            } catch (IllegalBlockSizeException e) {
+	    			            Log.e("SE3", "Exception in StoreData: " + e.getMessage());
+	    			            } catch (BadPaddingException e) {
+	    			            Log.e("SE3", "Exception in StoreData: " + e.getMessage());
+	    			            } catch (InvalidAlgorithmParameterException e) {
+	    			            Log.e("SE3", "Exception in StoreData: " + e.getMessage());
+	    			            }
+	    			        Message message = new Message();
+	    			 		Bundle temp = new Bundle();
+	    			 		temp.putString("password", Decrypted_Data);
+	    			 		message.setData(temp); 
+	    			 		code_talker.getHandler().sendMessage(message);
+	    			}
+	    		}
+	    	}
+	    }
+	    
+	    finish();
+	}
 	
 	private void runGoogleSTT()
 	{
